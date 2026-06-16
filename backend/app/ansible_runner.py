@@ -3,6 +3,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from app.keystore import get_private_key_path
 from app.models import DeploymentState, DeployRequest
 from app.state import deployments
 
@@ -15,6 +16,10 @@ def run_plex_deployment(task_id: str, request: DeployRequest) -> None:
     status.message = "Connecting to server and starting deployment..."
 
     try:
+        key_path = get_private_key_path(request.key_id)
+        if not key_path:
+            raise FileNotFoundError(f"SSH key {request.key_id} not found")
+
         inventory_content = (
             f"[media_servers]\n"
             f"{request.server_ip} "
@@ -24,7 +29,6 @@ def run_plex_deployment(task_id: str, request: DeployRequest) -> None:
 
         env = os.environ.copy()
         env["ANSIBLE_HOST_KEY_CHECKING"] = "False"
-        env["ANSIBLE_SSH_ARGS"] = "-o StrictHostKeyChecking=no"
 
         with tempfile.TemporaryDirectory() as tmpdir:
             inventory_path = os.path.join(tmpdir, "inventory")
@@ -36,7 +40,7 @@ def run_plex_deployment(task_id: str, request: DeployRequest) -> None:
                 "-i", inventory_path,
                 str(ANSIBLE_DIR / "playbook.yml"),
                 "-v",
-                "--extra-vars", f"ansible_password={request.ssh_password}",
+                "--private-key", str(key_path),
             ]
 
             status.log.append(f"Running Ansible playbook against {request.server_ip}...")
