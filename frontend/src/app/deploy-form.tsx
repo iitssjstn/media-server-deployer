@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-type AuthMethod = "password" | "ssh_key";
 type DeploymentState = "idle" | "submitting" | "polling" | "success" | "failed";
 
 interface DeploymentStatus {
@@ -18,9 +17,7 @@ export default function DeployForm() {
   const [serverIp, setServerIp] = useState("");
   const [sshUser, setSshUser] = useState("root");
   const [sshPort, setSshPort] = useState(22);
-  const [authMethod, setAuthMethod] = useState<AuthMethod>("password");
   const [sshPassword, setSshPassword] = useState("");
-  const [sshKey, setSshKey] = useState("");
 
   const [deployState, setDeployState] = useState<DeploymentState>("idle");
   const [status, setStatus] = useState<DeploymentStatus | null>(null);
@@ -62,10 +59,7 @@ export default function DeployForm() {
       server_ip: serverIp,
       ssh_user: sshUser,
       ssh_port: sshPort,
-      auth_method: authMethod,
-      ...(authMethod === "password"
-        ? { ssh_password: sshPassword }
-        : { ssh_key: sshKey }),
+      ssh_password: sshPassword,
     };
 
     try {
@@ -168,72 +162,21 @@ export default function DeployForm() {
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
             Authentication
           </h2>
-          <div className="space-y-4">
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="auth-method"
-                  value="password"
-                  checked={authMethod === "password"}
-                  onChange={() => setAuthMethod("password")}
-                  className="accent-amber-500"
-                />
-                <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                  Password
-                </span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="auth-method"
-                  value="ssh_key"
-                  checked={authMethod === "ssh_key"}
-                  onChange={() => setAuthMethod("ssh_key")}
-                  className="accent-amber-500"
-                />
-                <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                  SSH Key
-                </span>
-              </label>
-            </div>
-
-            {authMethod === "password" ? (
-              <div>
-                <label
-                  htmlFor="ssh-password"
-                  className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
-                >
-                  SSH Password
-                </label>
-                <input
-                  id="ssh-password"
-                  type="password"
-                  required
-                  value={sshPassword}
-                  onChange={(e) => setSshPassword(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                />
-              </div>
-            ) : (
-              <div>
-                <label
-                  htmlFor="ssh-key"
-                  className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
-                >
-                  Private SSH Key
-                </label>
-                <textarea
-                  id="ssh-key"
-                  required
-                  rows={5}
-                  placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;..."
-                  value={sshKey}
-                  onChange={(e) => setSshKey(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-mono text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                />
-              </div>
-            )}
+          <div>
+            <label
+              htmlFor="ssh-password"
+              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+            >
+              SSH Password
+            </label>
+            <input
+              id="ssh-password"
+              type="password"
+              required
+              value={sshPassword}
+              onChange={(e) => setSshPassword(e.target.value)}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            />
           </div>
         </div>
 

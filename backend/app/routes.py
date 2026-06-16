@@ -4,8 +4,6 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from app.ansible_runner import run_plex_deployment
 from app.models import (
-    AuthMethod,
-    DeploymentState,
     DeploymentStatus,
     DeployRequest,
     DeployResponse,
@@ -22,17 +20,6 @@ async def health_check():
 
 @router.post("/deploy", response_model=DeployResponse)
 async def deploy_plex(request: DeployRequest, background_tasks: BackgroundTasks):
-    if request.auth_method == AuthMethod.PASSWORD and not request.ssh_password:
-        raise HTTPException(
-            status_code=422,
-            detail="ssh_password is required when auth_method is 'password'",
-        )
-    if request.auth_method == AuthMethod.SSH_KEY and not request.ssh_key:
-        raise HTTPException(
-            status_code=422,
-            detail="ssh_key is required when auth_method is 'ssh_key'",
-        )
-
     task_id = str(uuid.uuid4())
     deployments[task_id] = DeploymentStatus(task_id=task_id)
 
