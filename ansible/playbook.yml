@@ -1,0 +1,6 @@
+---
+- name: Deploy Plex Media Server
+  hosts: media_servers
+  become: true
+  roles:
+    - plex

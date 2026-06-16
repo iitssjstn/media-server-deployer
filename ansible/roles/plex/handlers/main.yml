@@ -1,0 +1,5 @@
+---
+- name: Restart Plex
+  ansible.builtin.systemd:
+    name: "{{ plex_service_name }}"
+    state: restarted

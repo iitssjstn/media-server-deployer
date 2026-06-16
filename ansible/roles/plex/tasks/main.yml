@@ -1,0 +1,59 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - curl
+      - gnupg
+    state: present
+
+- name: Add Plex GPG key
+  ansible.builtin.apt_key:
+    url: https://downloads.plex.tv/plex-keys/PlexSign.key
+    state: present
+
+- name: Add Plex repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://downloads.plex.tv/repo/deb public main"
+    state: present
+    filename: plexmediaserver
+
+- name: Install Plex Media Server
+  ansible.builtin.apt:
+    name: plexmediaserver
+    state: present
+    update_cache: true
+
+- name: Create media directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: plex
+    group: plex
+    mode: "0755"
+  loop: "{{ plex_media_dirs }}"
+
+- name: Enable and start Plex Media Server
+  ansible.builtin.systemd:
+    name: "{{ plex_service_name }}"
+    enabled: true
+    state: started
+
+- name: Wait for Plex to be accessible
+  ansible.builtin.uri:
+    url: "http://localhost:32400/web"
+    method: GET
+    status_code: [200, 301, 302]
+  register: plex_check
+  retries: 10
+  delay: 5
+  until: plex_check.status in [200, 301, 302]
+
+- name: Print Plex access URL
+  ansible.builtin.debug:
+    msg: "Plex Media Server is running! Access it at http://{{ ansible_host }}:32400/web"
