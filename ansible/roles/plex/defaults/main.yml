@@ -1,0 +1,7 @@
+---
+plex_media_dirs:
+  - /srv/plex/movies
+  - /srv/plex/tv
+  - /srv/plex/music
+
+plex_service_name: plexmediaserver
